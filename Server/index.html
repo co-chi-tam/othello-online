@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <title>Othello chess - Cờ úp online</title>
+   </head>
+   
+   <script src = "/socket.io/socket.io.js"></script>
+   <script>
+      var socket = io();
+      function setUsername() {
+         socket.emit('setPlayerData', 
+         { 'playerName': document.getElementById('name').value, 'playerAvatar': 0 });
+      };
+      var user;
+      var turnIndex;
+      var team;
+      socket.on('playerExists', function(data) {
+         document.getElementById('error-container').innerHTML = data;
+      });
+      socket.on('startGame', function(data) {
+           console.log ('startGame ' + JSON.stringify(data));
+      });
+      socket.on('receivePlayerData', function(data) {
+         user = data.username;
+      //    document.body.innerHTML = '<input type = "text" id = "message">\
+      //    <button type = "button" name = "button" onclick = "sendMessage()">Send</button>';
+      });
+      function sendMessage() {
+         var msg = document.getElementById('message').value;
+         if(msg) {
+            socket.emit('sendWorldChat', {message: msg, user: user});
+            document.getElementById('message').value = '';
+         }
+      }
+      socket.on('msgChatRoom', function(data) {
+         if (user) {
+            document.getElementById('message-container').innerHTML += '<div><b>' + 
+               data.user + '</b>: ' + data.message + '</div>'
+         }
+         console.log ('MESSAGE RECEIVE ' + JSON.stringify(data));
+      })
+      socket.on('receiveTurnIndex', function(data) {
+         console.log ('TURN INDEX RECEIVE ' + JSON.stringify(data));
+         turnIndex = data.turnIndex;
+         team = data.team;
+      })
+      function JoinOrCreateRoom() {
+            socket.emit('joinExistedRoom');
+      }
+      function LeaveRoom() {
+            socket.emit('leaveRoom');
+      }
+      function SendChessPosition(x, y) {
+            socket.emit('sendChessPosition', { posX: x, posY: y, turnIndex: turnIndex, team: team });
+      }
+      socket.on('newJoinRoom', function(data) {
+            console.log (JSON.stringify(data));
+      });
+      socket.on('receiveChessPosition', function(data) {
+            console.log (JSON.stringify(data));
+      });
+      socket.on('clearRoom', function(data) {
+            console.log ("Room is clear ... ");
+      });
+      socket.on('receiveChessFail', function(data) {
+            console.log (JSON.stringify(data));
+      });
+      socket.on('beep', function(data) {
+            console.log ("beep");
+      });
+      socket.on('counterDownAnswer', function(data) {
+            // console.log ('counterDownAnswer ' + JSON.stringify(data));
+      });
+      setInterval(function(){
+            socket.emit("beep");
+      }, 1000);
+	  
+   </script>
+   
+   <body>
+      <div id = "error-container"></div>
+      <input id = "name" type = "text" name = "name" value = "" 
+         placeholder = "Enter your name!">
+      <button type = "button" name = "button" onclick = "setUsername()">
+         Let me chat!
+      </button>
+      <button type = "button" name = "button" onclick = "JoinOrCreateRoom()">
+            Join or Create room
+      </button>
+      <button type = "button" name = "button" onclick = "LeaveRoom()">
+            Leave room
+      </button>
+      <br />
+      <button type = "button" name = "button" onclick = "SendChessPosition(1, 1)">
+            Chess X:1, Y:1
+      </button>
+      <button type = "button" name = "button" onclick = "SendChessPosition(1, 2)">
+            Chess X:1, Y:2
+      </button>
+      <button type = "button" name = "button" onclick = "SendChessPosition(1, 3)">
+            Chess X:1, Y:3
+      </button>
+      <button type = "button" name = "button" onclick = "SendChessPosition(1, 4)">
+            Chess X:1, Y:4
+      </button>
+      <button type = "button" name = "button" onclick = "SendChessPosition(1, 5)">
+            Chess X:1, Y:5
+      </button>
+      <br />
+      <button type = "button" name = "button" onclick = "SendChessPosition(3, 3)">
+            Chess X:3, Y:3
+      </button>
+      <button type = "button" name = "button" onclick = "SendChessPosition(3, 4)">
+            Chess X:3, Y:4
+      </button>
+      <button type = "button" name = "button" onclick = "SendChessPosition(4, 3)">
+            Chess X:4, Y:3
+      </button>
+      <button type = "button" name = "button" onclick = "SendChessPosition(4, 4)">
+            Chess X:4, Y:4
+      </button>
+      <br />
+      <button type = "button" name = "button" onclick = "SendChessPosition(2, 4)">
+            Chess X:2, Y:4
+      </button>
+      <button type = "button" name = "button" onclick = "SendChessPosition(5, 4)">
+            Chess X:5, Y:4
+      </button>
+      <button type = "button" name = "button" onclick = "SendChessPosition(2, 3)">
+            Chess X:2, Y:3
+      </button>
+      <button type = "button" name = "button" onclick = "SendChessPosition(5, 3)">
+            Chess X:5, Y:3
+      </button>
+      <br />
+	   <input id = "message" type = "text" name = "message" value = "This is chat" 
+         placeholder = "Enter your chat!">
+      <button type = "button" name = "button" onclick = "sendMessage()">
+         Send chat.
+      </button>
+   </body>
+</html>
